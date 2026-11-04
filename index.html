@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Audit Dokumen PdP — KK Besut 2026</title>
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 14px; line-height: 1.6;
+      background: #f0f2f5; color: #1f2328;
+      display: flex; min-height: 100vh;
+    }
+
+    /* ============================================================
+       SIDEBAR
+    ============================================================ */
+    .sidebar {
+      width: 240px; min-height: 100vh;
+      background: #1e293b; color: #e2e8f0;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px 18px; border-bottom: 1px solid #334155;
+      font-size: 14px; font-weight: 700; color: #f1f5f9;
+    }
+    .logo-icon { font-size: 22px; }
+    .sidebar-nav { flex: 1; padding: 16px 0; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px; color: #94a3b8; text-decoration: none;
+      border-radius: 6px; margin: 0 8px;
+      transition: background 0.15s, color 0.15s; font-size: 13px;
+    }
+    .nav-item:hover { background: #334155; color: #f1f5f9; }
+    .nav-item.active { background: #3b82f6; color: #ffffff; font-weight: 600; }
+    .nav-badge {
+      display: none; background: #ef4444; color: #fff;
+      font-size: 10px; font-weight: 700; padding: 1px 6px;
+      border-radius: 20px;
+    }
+    .sidebar-footer { padding: 16px 18px; border-top: 1px solid #334155; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 36px; height: 36px; background: #3b82f6; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff; font-size: 13px; flex-shrink: 0;
+    }
+    .user-name { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+    .user-role { font-size: 11px; color: #64748b; }
+
+    /* ============================================================
+       MAIN
+    ============================================================ */
+    .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+
+    /* ============================================================
+       TOPBAR
+    ============================================================ */
+    .topbar {
+      background: #ffffff; border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 16px; font-weight: 700; }
+    .topbar-meta { display: flex; align-items: center; gap: 10px; }
+    .badge-date {
+      font-size: 12px; color: #57606a; background: #f7f8fa;
+      border: 1px solid #e5e7eb; border-radius: 4px; padding: 3px 9px;
+    }
+    .badge-live { font-size: 12px; color: #22c55e; font-weight: 600; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ============================================================
+       ALERT BANNER
+    ============================================================ */
+    .alert-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: #fff7ed; border-bottom: 2px solid #f97316;
+      color: #9a3412; padding: 10px 24px; font-size: 13px;
+    }
+    .alert-close {
+      background: none; border: none; color: #9a3412;
+      font-size: 16px; cursor: pointer; flex-shrink: 0;
+    }
+
+    /* ============================================================
+       SECTIONS
+    ============================================================ */
+    .section { display: none; padding: 24px; }
+    .section.active { display: block; }
+    .section-heading { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+
+    /* ============================================================
+       KPI GRID
+    ============================================================ */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 14px; margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 18px 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .kpi-icon {
+      font-size: 22px; width: 42px; height: 42px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+    }
+    .kpi-icon.blue   { background: #dbeafe; }
+    .kpi-icon.green  { background: #dcfce7; }
+    .kpi-icon.yellow { background: #fef9c3; }
+    .kpi-icon.purple { background: #ede9fe; }
+    .kpi-icon.red    { background: #fee2e2; }
+    .kpi-icon.orange { background: #ffedd5; }
+    .kpi-value { font-size: 28px; font-weight: 800; line-height: 1; }
+    .kpi-label { font-size: 12px; color: #57606a; }
+
+    /* ============================================================
+       TABLE CONTROLS
+    ============================================================ */
+    .table-controls {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .ctrl-search {
+      flex: 1; min-width: 180px; padding: 8px 12px;
+      border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px;
+      outline: none; background: #fff; color: #1f2328;
+    }
+    .ctrl-search:focus { border-color: #3b82f6; }
+    .ctrl-select {
+      padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 6px;
+      font-size: 13px; background: #fff; color: #1f2328; cursor: pointer; outline: none;
+    }
+    .ctrl-select:focus { border-color: #3b82f6; }
+    .ctrl-export { display: flex; gap: 6px; margin-left: auto; }
+    .btn-export {
+      padding: 7px 14px; border: none; border-radius: 6px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .btn-export.print { background: #6366f1; color: #fff; }
+    .btn-export.print:hover { background: #4f46e5; }
+
+    /* ============================================================
+       TABLE
+    ============================================================ */
+    .table-wrapper {
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 10px; overflow: auto;
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead { background: #f7f8fa; }
+    .data-table th {
+      padding: 11px 14px; text-align: left; font-size: 12px;
+      font-weight: 700; color: #57606a; border-bottom: 1px solid #e5e7eb; white-space: nowrap;
+    }
+    .data-table td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid #f0f2f5; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f7f8fa; }
+    .clickable-row { cursor: pointer; }
+    .clickable-row:hover { background: #eff6ff !important; }
+    .empty-row { text-align: center; padding: 24px; color: #57606a; font-style: italic; }
+
+    /* ============================================================
+       BADGES
+    ============================================================ */
+    .badge {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 600; white-space: nowrap;
+    }
+    .badge.green  { background: #dcfce7; color: #15803d; }
+    .badge.yellow { background: #fef9c3; color: #854d0e; }
+    .badge.red    { background: #fee2e2; color: #b91c1c; }
+    .badge.blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge.grey   { background: #f1f5f9; color: #475569; }
+    .badge.orange { background: #ffedd5; color: #9a3412; }
+
+    /* ============================================================
+       AUDITOR CARDS
+    ============================================================ */
+    .auditor-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;
+    }
+    .auditor-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 20px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .auditor-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .auditor-avatar {
+      width: 44px; height: 44px; background: #3b82f6; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: #fff; font-size: 15px; flex-shrink: 0;
+    }
+    .auditor-name { font-size: 13px; font-weight: 700; }
+    .auditor-dept { font-size: 11px; color: #57606a; }
+    .auditor-auditi { font-size: 12px; color: #374151; margin-top: 4px; }
+    .auditor-auditi strong { color: #1f2328; }
+    .auditor-masa { font-size: 11px; color: #57606a; margin-top: 4px; padding-top: 8px; border-top: 1px solid #f0f2f5; }
+
+    /* ============================================================
+       JADUAL SECTION
+    ============================================================ */
+    .jadual-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
+    }
+    .jadual-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px;
+    }
+    .jadual-tarikh {
+      font-size: 13px; font-weight: 700; color: #3b82f6; margin-bottom: 10px;
+    }
+    .jadual-sesi { font-size: 12px; color: #57606a; margin-bottom: 6px; }
+    .jadual-sesi strong { color: #1f2328; }
+
+    /* ============================================================
+       MODAL
+    ============================================================ */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      display: flex; align-items: center; justify-content: center; z-index: 200;
+    }
+    .modal-box {
+      background: #fff; border-radius: 12px; width: 100%; max-width: 500px;
+      max-height: 80vh; overflow-y: auto;
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid #e5e7eb;
+      position: sticky; top: 0; background: #fff;
+    }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #57606a; }
+    .modal-body { padding: 18px 20px; }
+    .modal-dl { display: flex; flex-direction: column; gap: 10px; }
+    .modal-row {
+      display: flex; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #f0f2f5;
+    }
+    .modal-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .modal-row dt {
+      width: 140px; flex-shrink: 0; font-size: 11px; font-weight: 700;
+      color: #57606a; text-transform: uppercase; letter-spacing: 0.4px; padding-top: 2px;
+    }
+    .modal-row dd { font-size: 13.5px; }
+
+    /* ============================================================
+       PRINT
+    ============================================================ */
+    @media print {
+      .sidebar, .topbar, .table-controls, .alert-banner, .modal-overlay { display: none !important; }
+      .main { margin-left: 0; }
+      .section { display: block !important; padding: 10px; }
+      .section-heading { font-size: 14px; margin-bottom: 10px; }
+      .data-table th, .data-table td { font-size: 11px; padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">📋</span>
+      <span class="logo-text">Audit Dokumen PdP</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="overview">🏠 Ringkasan</a>
+      <a href="#" class="nav-item" data-section="jadual">📅 Jadual Audit</a>
+      <a href="#" class="nav-item" data-section="auditors">👤 Juruaudit</a>
+      <a href="#" class="nav-item" data-section="auditi">📄 Senarai Auditi</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">KA</div>
+        <div>
+          <div class="user-name">Nik Mohd Kamil Ibrahim</div>
+          <div class="user-role">Ketua Audit · KK Besut</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Ringkasan Eksekutif</div>
+      <div class="topbar-meta">
+        <span class="badge-date">📅 15–16 November 2026</span>
+        <span class="badge-live">● Audit Dokumen PdP</span>
+      </div>
+    </header>
+
+    <!-- ALERT -->
+    <div id="alert-banner" class="alert-banner" style="display:none;">
+      <span id="alert-text"></span>
+      <button class="alert-close" onclick="this.parentElement.style.display='none'">✕</button>
+    </div>
+
+    <!-- SECTION: OVERVIEW -->
+    <section id="section-overview" class="section active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue">👤</div>
+          <div class="kpi-value">7</div>
+          <div class="kpi-label">Juruaudit Dalaman</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green">📄</div>
+          <div class="kpi-value">19</div>
+          <div class="kpi-label">Auditi (Pemilik Fail)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon yellow">📅</div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-label">Hari Audit</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple">🏛️</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-label">Jabatan Terlibat</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange">📋</div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-label">Jenis Fail Diaudit</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red">🔍</div>
+          <div class="kpi-value">1</div>
+          <div class="kpi-label">Sesi Audit: 2026/2027</div>
+        </div>
+      </div>
+
+      <!-- Maklumat Umum -->
+      <div class="table-wrapper" style="margin-bottom:20px; padding:20px;">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;color:#1f2328;">📌 Maklumat Audit</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #f0f2f5;">
+            <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#57606a;width:200px;text-transform:uppercase;">Jenis Audit</td>
+            <td style="padding:8px 12px;font-size:13px;">Audit Dokumen PdP (Fail Rekod Pensyarah &amp; Fail Penyelaras Kursus)</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f0f2f5;">
+            <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#57606a;text-transform:uppercase;">Sesi</td>
+            <td style="padding:8px 12px;font-size:13px;">Sesi I: 2026/2027</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f0f2f5;">
+            <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#57606a;text-transform:uppercase;">Tarikh</td>
+            <td style="padding:8px 12px;font-size:13px;">15 – 16 November 2026 (Ahad – Isnin)</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f0f2f5;">
+            <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#57606a;text-transform:uppercase;">Pengerusi</td>
+            <td style="padding:8px 12px;font-size:13px;">Nik Mohd Kamil bin Ibrahim @ Nik Hanafi</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f0f2f5;">
+            <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#57606a;text-transform:uppercase;">Setiausaha</td>
+            <td style="padding:8px 12px;font-size:13px;">Ts. Zaiton binti Othman (DAD)</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 12px;font-size:12px;font-weight:700;color:#57606a;text-transform:uppercase;">Nota</td>
+            <td style="padding:8px 12px;font-size:13px;">Pembahagian 19 auditi kepada 7 juruaudit adalah seimbang dan tiada audit kendiri.</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Jadual Sesi -->
+      <div class="jadual-grid">
+        <div class="jadual-card">
+          <div class="jadual-tarikh">📅 15 November 2026 (Ahad)</div>
+          <div class="jadual-sesi"><strong>Sesi Audit</strong><br/>9.00 pagi – 1.00 tengah hari</div>
+        </div>
+        <div class="jadual-card">
+          <div class="jadual-tarikh">📅 15 November 2026 (Ahad) — Juruaudit Bil. 4</div>
+          <div class="jadual-sesi"><strong>Sesi Audit</strong><br/>9.00 pagi – 1.00 tengah hari</div>
+          <div class="jadual-sesi" style="margin-top:6px;"><strong>Sesi Pematuhan &amp; Pembuktian</strong><br/>2.30 – 5.00 petang</div>
+        </div>
+        <div class="jadual-card">
+          <div class="jadual-tarikh">📅 16 November 2026 (Isnin) — Juruaudit Bil. 1–3, 5–7</div>
+          <div class="jadual-sesi"><strong>Sesi Pematuhan &amp; Pembuktian</strong><br/>2.30 – 5.00 petang</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: JADUAL AUDIT -->
+    <section id="section-jadual" class="section">
+      <h2 class="section-heading">📅 Jadual Audit</h2>
+      <div class="table-controls">
+        <input class="ctrl-search" type="text" id="jadual-search" placeholder="🔍 Cari juruaudit atau auditi..." />
+        <div class="ctrl-export">
+          <button class="btn-export print" onclick="printTable('jadual-table','Jadual Audit Dokumen PdP')">🖨️ Cetak</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="jadual-table"></table>
+      </div>
+    </section>
+
+    <!-- SECTION: AUDITORS -->
+    <section id="section-auditors" class="section">
+      <h2 class="section-heading">👤 Senarai Juruaudit Dalaman</h2>
+      <div class="auditor-grid" id="auditor-grid"></div>
+    </section>
+
+    <!-- SECTION: AUDITI -->
+    <section id="section-auditi" class="section">
+      <h2 class="section-heading">📄 Senarai Auditi (Pemilik Fail)</h2>
+      <div class="table-controls">
+        <input class="ctrl-search" type="text" id="auditi-search" placeholder="🔍 Cari nama atau jabatan..." />
+        <select class="ctrl-select" id="auditi-filter-jabatan">
+          <option value="">Semua Jabatan</option>
+          <option>DAD</option>
+          <option>DTD</option>
+          <option>STD</option>
+          <option>Am</option>
+        </select>
+        <div class="ctrl-export">
+          <button class="btn-export print" onclick="printTable('auditi-table','Senarai Auditi')">🖨️ Cetak</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="auditi-table"></table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none;">
+    <div id="modal-box" class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-title"></h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+  // ============================================================
+  //  DATA SEBENAR — dari Jadual_Audit_Dokumen_PdP & senarai auditor.docx
+  // ============================================================
+  const DATA = {
+    juruaudit: [
+      { bil: 1, nama: "Ts. Zaiton binti Othman",       jabatan: "DAD", peranan: "Setiausaha / Juruaudit" },
+      { bil: 2, nama: "Ts. Udom a/l Ewon",             jabatan: "DAD", peranan: "Juruaudit Dalaman" },
+      { bil: 3, nama: "En. Mohd Nazeri bin Abdul Ghani",jabatan: "Am",  peranan: "Juruaudit Dalaman" },
+      { bil: 4, nama: "Pn. Syilawati binti Zakaria",   jabatan: "Am",  peranan: "Juruaudit Dalaman" },
+      { bil: 5, nama: "Pn. Nor Zuliana binti Awang",   jabatan: "STD", peranan: "Juruaudit Dalaman" },
+      { bil: 6, nama: "Pn. Siti Noorlida binti Ahmad Rusli", jabatan: "DTD", peranan: "Juruaudit Dalaman" },
+      { bil: 7, nama: "Pn. Siti Khanzaza binti Fauzzim",jabatan: "DTD", peranan: "Juruaudit Dalaman" },
+    ],
+
+    jadual: [
+      {
+        bil: 1, juruaudit: "Ts. Zaiton binti Othman (DAD)",
+        auditi: "7. Ts. Zaihairun bin Zulkifli (DTD)\n8. Ts. Toh Bee Kiew (DTD)\n9. Puan Nur Afifah binti Mohd (STD)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "16 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+      {
+        bil: 2, juruaudit: "Ts. Udom a/l Ewon (DAD)",
+        auditi: "1. Ts. Mat Sazilin bin Ayub (DAD)\n3. Puan Rawaida binti Muhammad (DAD)\n4. Encik Raja Rozake bin Raja Daud (DAD)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "16 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+      {
+        bil: 3, juruaudit: "En. Mohd Nazeri bin Abdul Ghani (Am)",
+        auditi: "2. Ts. Zaiton binti Othman (DAD)\n5. Puan Mariati binti Ahmad (DAD)\n6. Encik Mohd Azwan bin Mahmood (DAD)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "16 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+      {
+        bil: 4, juruaudit: "Pn. Syilawati binti Zakaria (Am)",
+        auditi: "10. Puan Nor Zuliana binti Awang (STD)\n11. Puan Nursyafira Diyana binti Azman (STD)\n12. Cik Wan Faizah binti Wan Sulaiman (STD)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "15 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+      {
+        bil: 5, juruaudit: "Pn. Nor Zuliana binti Awang (STD)",
+        auditi: "14. Puan Siti Noor Asiah binti Mustafa (Am)\n15. Encik Ruzaiha bin Abdul Rashid (Am)\n16. Puan Syilawati binti Zakaria (Am)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "16 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+      {
+        bil: 6, juruaudit: "Pn. Siti Noorlida binti Ahmad Rusli (DTD)",
+        auditi: "13. Encik Mohd Nazeri bin Abdul Ghani (Am)\n17. Ts. Dr. Nurfaezah binti Mamat (Am)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "16 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+      {
+        bil: 7, juruaudit: "Pn. Siti Khanzaza binti Fauzzim (DTD)",
+        auditi: "18. Encik Muhammad Asyraf bin Rosli (Am)\n19. Encik Muhammad Afiq Norkhairi bin Zaharul (Am)",
+        tarikh1: "15 Nov 2026 | 9.00 pg – 1.00 tgh",
+        tarikh2: "16 Nov 2026 | 2.30 – 5.00 ptg"
+      },
+    ],
+
+    auditi: [
+      { bil: 1,  nama: "Ts. Mat Sazilin bin Ayub",              jabatan: "DAD", juruaudit: "Ts. Udom a/l Ewon" },
+      { bil: 2,  nama: "Ts. Zaiton binti Othman",               jabatan: "DAD", juruaudit: "En. Mohd Nazeri bin Abdul Ghani" },
+      { bil: 3,  nama: "Puan Rawaida binti Muhammad",           jabatan: "DAD", juruaudit: "Ts. Udom a/l Ewon" },
+      { bil: 4,  nama: "Encik Raja Rozake bin Raja Daud",       jabatan: "DAD", juruaudit: "Ts. Udom a/l Ewon" },
+      { bil: 5,  nama: "Puan Mariati binti Ahmad",              jabatan: "DAD", juruaudit: "En. Mohd Nazeri bin Abdul Ghani" },
+      { bil: 6,  nama: "Encik Mohd Azwan bin Mahmood",          jabatan: "DAD", juruaudit: "En. Mohd Nazeri bin Abdul Ghani" },
+      { bil: 7,  nama: "Ts. Zaihairun bin Zulkifli",            jabatan: "DTD", juruaudit: "Ts. Zaiton binti Othman" },
+      { bil: 8,  nama: "Ts. Toh Bee Kiew",                     jabatan: "DTD", juruaudit: "Ts. Zaiton binti Othman" },
+      { bil: 9,  nama: "Puan Nur Afifah binti Mohd",            jabatan: "STD", juruaudit: "Ts. Zaiton binti Othman" },
+      { bil: 10, nama: "Puan Nor Zuliana binti Awang",          jabatan: "STD", juruaudit: "Pn. Syilawati binti Zakaria" },
+      { bil: 11, nama: "Puan Nursyafira Diyana binti Azman",    jabatan: "STD", juruaudit: "Pn. Syilawati binti Zakaria" },
+      { bil: 12, nama: "Cik Wan Faizah binti Wan Sulaiman",     jabatan: "STD", juruaudit: "Pn. Syilawati binti Zakaria" },
+      { bil: 13, nama: "Encik Mohd Nazeri bin Abdul Ghani",     jabatan: "Am",  juruaudit: "Pn. Siti Noorlida binti Ahmad Rusli" },
+      { bil: 14, nama: "Puan Siti Noor Asiah binti Mustafa",    jabatan: "Am",  juruaudit: "Pn. Nor Zuliana binti Awang" },
+      { bil: 15, nama: "Encik Ruzaiha bin Abdul Rashid",        jabatan: "Am",  juruaudit: "Pn. Nor Zuliana binti Awang" },
+      { bil: 16, nama: "Puan Syilawati binti Zakaria",          jabatan: "Am",  juruaudit: "Pn. Nor Zuliana binti Awang" },
+      { bil: 17, nama: "Ts. Dr. Nurfaezah binti Mamat",         jabatan: "Am",  juruaudit: "Pn. Siti Noorlida binti Ahmad Rusli" },
+      { bil: 18, nama: "Encik Muhammad Asyraf bin Rosli",       jabatan: "Am",  juruaudit: "Pn. Siti Khanzaza binti Fauzzim" },
+      { bil: 19, nama: "Encik Muhammad Afiq Norkhairi bin Zaharul", jabatan: "Am", juruaudit: "Pn. Siti Khanzaza binti Fauzzim" },
+    ]
+  };
+
+  // ============================================================
+  //  NAVIGASI
+  // ============================================================
+  const titles = {
+    overview: "Ringkasan Eksekutif",
+    jadual:   "Jadual Audit",
+    auditors: "Juruaudit Dalaman",
+    auditi:   "Senarai Auditi"
+  };
+
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", e => {
+      e.preventDefault();
+      const sec = item.dataset.section;
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      item.classList.add("active");
+      document.getElementById("section-" + sec).classList.add("active");
+      document.getElementById("page-title").textContent = titles[sec];
+    });
+  });
+
+  // ============================================================
+  //  HELPERS
+  // ============================================================
+  function jabatanBadge(j) {
+    const map = { "DAD": "badge blue", "DTD": "badge green", "STD": "badge yellow", "Am": "badge orange" };
+    return `<span class="${map[j] || 'badge grey'}">${j}</span>`;
+  }
+
+  function buildTable(id, headers, items, rowMapper) {
+    const table = document.getElementById(id);
+    if (!items.length) {
+      table.innerHTML = `<tbody><tr><td colspan="${headers.length}" class="empty-row">Tiada rekod ditemui.</td></tr></tbody>`;
+      return;
+    }
+    table.innerHTML = `
+      <thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+      <tbody>${items.map((item, i) => {
+        const cells = rowMapper(item, i);
+        return `<tr class="clickable-row" data-idx="${i}" data-table="${id}">${cells.map(c => `<td>${c}</td>`).join("")}</tr>`;
+      }).join("")}</tbody>
+    `;
+    table.querySelectorAll(".clickable-row").forEach(row => {
+      row.addEventListener("click", () => openModal(row.dataset.table, parseInt(row.dataset.idx)));
+    });
+  }
+
+  // ============================================================
+  //  JADUAL AUDIT
+  // ============================================================
+  let jadualFiltered = [...DATA.jadual];
+
+  function renderJadual() {
+    const q = (document.getElementById("jadual-search").value || "").toLowerCase();
+    jadualFiltered = DATA.jadual.filter(j =>
+      !q || j.juruaudit.toLowerCase().includes(q) || j.auditi.toLowerCase().includes(q)
+    );
+    buildTable("jadual-table",
+      ["Bil", "Juruaudit", "Auditi (Pemilik Fail)", "Sesi Audit", "Sesi Pematuhan"],
+      jadualFiltered,
+      j => [j.bil, j.juruaudit, j.auditi.replace(/\n/g, "<br/>"), j.tarikh1, j.tarikh2]
+    );
+  }
+
+  document.getElementById("jadual-search").addEventListener("input", renderJadual);
+  renderJadual();
+
+  // ============================================================
+  //  AUDITI
+  // ============================================================
+  let auditiFiltered = [...DATA.auditi];
+
+  function renderAuditi() {
+    const q  = (document.getElementById("auditi-search").value || "").toLowerCase();
+    const jb = document.getElementById("auditi-filter-jabatan").value;
+    auditiFiltered = DATA.auditi.filter(a =>
+      (!q  || a.nama.toLowerCase().includes(q) || a.juruaudit.toLowerCase().includes(q)) &&
+      (!jb || a.jabatan === jb)
+    );
+    buildTable("auditi-table",
+      ["Bil", "Nama Auditi", "Jabatan", "Juruaudit"],
+      auditiFiltered,
+      a => [a.bil, a.nama, jabatanBadge(a.jabatan), a.juruaudit]
+    );
+  }
+
+  ["auditi-search","auditi-filter-jabatan"].forEach(id => {
+    document.getElementById(id).addEventListener("input", renderAuditi);
+    document.getElementById(id).addEventListener("change", renderAuditi);
+  });
+  renderAuditi();
+
+  // ============================================================
+  //  AUDITOR CARDS
+  // ============================================================
+  const grid = document.getElementById("auditor-grid");
+  DATA.jadual.forEach(j => {
+    const inisial = j.juruaudit.replace(/\s*\([^)]*\)/, "").trim().split(" ")
+      .filter(w => /^[A-Za-z]/.test(w)).slice(0,2).map(w => w[0]).join("").toUpperCase();
+    const jabatan = j.juruaudit.match(/\(([^)]+)\)/)?.[1] || "";
+    const auditiList = j.auditi.split("\n").map(x => x.trim()).filter(Boolean);
+    grid.innerHTML += `
+      <div class="auditor-card">
+        <div class="auditor-header">
+          <div class="auditor-avatar">${inisial}</div>
+          <div>
+            <div class="auditor-name">${j.juruaudit.replace(/\s*\([^)]*\)/, "")}</div>
+            <div class="auditor-dept">${jabatanBadge(jabatan)}</div>
+          </div>
+        </div>
+        <div class="auditor-auditi">
+          <strong>Auditi (${auditiList.length} orang):</strong><br/>
+          ${auditiList.map(x => `• ${x}`).join("<br/>")}
+        </div>
+        <div class="auditor-masa">📅 Bil. ${j.bil} · Sesi Audit: ${j.tarikh1}</div>
+      </div>
+    `;
+  });
+
+  // ============================================================
+  //  MODAL
+  // ============================================================
+  function openModal(tableId, idx) {
+    let title = "", rows = [];
+
+    if (tableId === "jadual-table") {
+      const j = jadualFiltered[idx];
+      title = "📅 Butiran Jadual — Bil. " + j.bil;
+      rows = [
+        ["Juruaudit", j.juruaudit],
+        ["Auditi", j.auditi.replace(/\n/g, "<br/>")],
+        ["Sesi Audit", j.tarikh1],
+        ["Sesi Pematuhan", j.tarikh2],
+      ];
+    } else if (tableId === "auditi-table") {
+      const a = auditiFiltered[idx];
+      title = "📄 Butiran Auditi — Bil. " + a.bil;
+      rows = [
+        ["Nama", a.nama],
+        ["Jabatan", jabatanBadge(a.jabatan)],
+        ["Juruaudit", a.juruaudit],
+        ["Tarikh Audit", "15 Nov 2026 | 9.00 pg – 1.00 tgh"],
+      ];
+    }
+
+    document.getElementById("modal-title").textContent = title;
+    document.getElementById("modal-body").innerHTML = `<dl class="modal-dl">${
+      rows.map(([l,v]) => `<div class="modal-row"><dt>${l}</dt><dd>${v}</dd></div>`).join("")
+    }</dl>`;
+    document.getElementById("modal-overlay").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("modal-overlay").style.display = "none";
+  }
+
+  document.getElementById("modal-overlay").addEventListener("click", function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ============================================================
+  //  CETAK
+  // ============================================================
+  function printTable(tableId, judul) {
+    const tableHTML = document.getElementById(tableId).outerHTML;
+    const win = window.open("", "_blank");
+    win.document.write(`<!DOCTYPE html><html><head><title>${judul}</title>
+      <style>
+        body { font-family: sans-serif; font-size: 12px; padding: 20px; }
+        h2 { margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 7px 10px; text-align: left; font-size: 11px; }
+        thead { background: #dbeafe; }
+        .badge { font-weight: bold; }
+      </style></head><body>
+      <h2>${judul} — KK Besut · Sesi I 2026/2027</h2>
+      ${tableHTML}
+      </body></html>`);
+    win.document.close();
+    win.print();
+  }
+
+  // ============================================================
+  //  ALERT — peringatan audit hampir
+  // ============================================================
+  const banner = document.getElementById("alert-banner");
+  document.getElementById("alert-text").innerHTML =
+    `📢 <strong>Audit Dokumen PdP akan berlangsung pada 15–16 November 2026.</strong> Sila pastikan semua fail rekod pensyarah dan fail penyelaras kursus disediakan.`;
+  banner.style.display = "flex";
+  </script>
+</body>
+</html>
