@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Audit — KK Besut 2026</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">📋</span>
+      <span class="logo-text">Audit KK Besut</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="overview">🏠 Ringkasan</a>
+      <a href="#" class="nav-item" data-section="audits">📁 Senarai Audit</a>
+      <a href="#" class="nav-item" data-section="findings">🚨 Penemuan</a>
+      <a href="#" class="nav-item" data-section="actions">🔔 Tindakan Susulan</a>
+      <a href="#" class="nav-item" data-section="auditors">👥 Auditor</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">KA</div>
+        <div>
+          <div class="user-name">Ketua Audit</div>
+          <div class="user-role">KK Besut 2026</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Ringkasan Eksekutif</div>
+      <div class="topbar-meta">
+        <span class="badge-date">📅 4 November 2026</span>
+        <span class="badge-live">● LIVE</span>
+      </div>
+    </header>
+
+    <!-- SECTION: OVERVIEW -->
+    <section id="section-overview" class="section active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue">📁</div>
+          <div class="kpi-value">24</div>
+          <div class="kpi-label">Jumlah Audit Dirancang</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green">✅</div>
+          <div class="kpi-value">17</div>
+          <div class="kpi-label">Audit Selesai</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon yellow">🔄</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-label">Dalam Proses</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red">⚠️</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-label">Tindakan Tertunggak</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple">📊</div>
+          <div class="kpi-value">72%</div>
+          <div class="kpi-label">% Kepatuhan Keseluruhan</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange">🚨</div>
+          <div class="kpi-value">38</div>
+          <div class="kpi-label">Penemuan Aktif</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3 class="chart-title">Trend Kepatuhan 2026 (%)</h3>
+          <canvas id="trendChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Taburan Risiko Penemuan</h3>
+          <canvas id="riskChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Status Audit</h3>
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: AUDITS -->
+    <section id="section-audits" class="section">
+      <h2 class="section-heading">📁 Senarai Audit</h2>
+      <div class="table-wrapper">
+        <table class="data-table" id="audit-table"></table>
+      </div>
+    </section>
+
+    <!-- SECTION: FINDINGS -->
+    <section id="section-findings" class="section">
+      <h2 class="section-heading">🚨 Penemuan Audit</h2>
+      <div class="table-wrapper">
+        <table class="data-table" id="findings-table"></table>
+      </div>
+    </section>
+
+    <!-- SECTION: ACTIONS -->
+    <section id="section-actions" class="section">
+      <h2 class="section-heading">🔔 Tindakan Susulan Tertunggak</h2>
+      <div class="table-wrapper">
+        <table class="data-table" id="actions-table"></table>
+      </div>
+    </section>
+
+    <!-- SECTION: AUDITORS -->
+    <section id="section-auditors" class="section">
+      <h2 class="section-heading">👥 Senarai Auditor</h2>
+      <div class="auditor-grid" id="auditor-grid"></div>
+    </section>
+
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
